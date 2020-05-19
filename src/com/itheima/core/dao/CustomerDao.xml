@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.core.dao.CustomerDao">
+    <!--SQL片段  -->
+    <sql id="selectCustomerListWhere">
+        <where>
+	       <if test="stu_name != null" >
+	           stu_name like "%"#{stu_name}"%"
+	       </if>
+	       <if test="status != null" >
+	        and status = #{status}
+	       </if>
+	       <if test="spt_event != null" >
+	        and spt_event = #{spt_event}
+	       </if>
+	       <if test="stu_sex != null" >
+	        and stu_sex = #{stu_sex}
+	       </if>
+	       <if test="examine != null" >
+	        and examine = #{examine}
+	       </if>
+        </where>
+    </sql>
+	<!-- 查询运动员列表  -->
+	<select id="selectCustomerList" parameterType="customer" 
+                                           resultType="customer">
+		SELECT
+			stu_id,
+			stu_name,
+			b.dict_sport_name stu_sex,
+			c.dict_sport_name status, 
+			stu_dept,
+			d.dict_sport_name spt_event,
+			score,
+			e.dict_sport_name examine
+		FROM
+			stu_event a
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_sport_name
+			FROM
+				sport_dict
+			WHERE
+				dict_type_code = '003'
+		) b ON a.stu_sex = b.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_sport_name
+			FROM
+				sport_dict
+			WHERE
+				dict_type_code = '001'
+		) c ON a.status = c.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_sport_name
+			FROM
+				sport_dict
+			WHERE
+				dict_type_code = '002'
+		) d ON a.spt_event = d.dict_id
+		LEFT JOIN (
+			SELECT
+				dict_id,
+				dict_sport_name
+			FROM
+				sport_dict
+			WHERE
+				dict_type_code = '004'
+		) e ON a.examine = e.dict_id
+		<include refid="selectCustomerListWhere"/>
+		<!-- 执行分页查询 -->
+		<if test="start !=null and rows != null">
+			limit #{start},#{rows}
+		</if>
+	</select>
+	<!-- 查询运动员总数 -->
+	<select id="selectCustomerListCount" parameterType="customer" 
+                                                 resultType="Integer">
+		select count(*) from stu_event
+		<include refid="selectCustomerListWhere"/>
+	</select>	
+	
+	<!-- 添加运动员信息 -->
+	<insert id="createCustomer" parameterType="customer">
+	    insert into stu_event(
+	                    stu_id,
+						stu_name,
+						stu_sex,
+						status,
+						stu_dept,
+						stu_class,
+						spt_event,
+						score,
+						examine,
+						stu_createtime
+	             )
+	             values(#{stu_id},
+	                    #{stu_name},
+	                    #{stu_sex},
+	                    #{status},
+	                    #{stu_dept},
+	                    #{stu_class},
+	                    #{spt_event},
+	                    #{score},
+	                    #{examine},
+	                    #{stu_createtime}
+	            )
+	</insert>
+	<!-- 根据id获取运动员信息 -->
+	<select id="getCustomerById" parameterType="Integer" 
+	resultType="customer">
+	    select * from stu_event where stu_id = #{id}
+	</select>
+	<!-- 更新运动员信息 -->
+	<update id="updateCustomer" parameterType="customer">
+	    update stu_event
+	    <set>
+	        <if test="stu_name!=null">
+	            stu_name=#{stu_name},
+	        </if>
+	        <if test="stu_sex!=null">
+	            stu_sex=#{stu_sex},
+	        </if>
+	        <if test="status!=null">
+	            status=#{status},
+	        </if>
+	        <if test="stu_dept!=null">
+	            stu_dept=#{stu_dept},
+	        </if>
+	        <if test="stu_class!=null">
+	            stu_class=#{stu_class},
+	        </if>
+	        <if test="spt_event!=null">
+	            spt_event=#{spt_event},
+	        </if>
+	        <if test="score!=null">
+	            score=#{score},
+	        </if>
+	        <if test="examine!=null">
+	            examine=#{examine},
+	        </if>
+	        <if test="stu_createtime!=null">
+	            stu_createtime=#{stu_createtime},
+	        </if>
+	    </set>
+	    where stu_id=#{stu_id}
+	</update>
+	<!-- 删除运动员信息 -->
+	<delete id="deleteCustomer" parameterType="Integer">
+	    delete from stu_event where stu_id=#{id}
+	</delete>
+</mapper>
